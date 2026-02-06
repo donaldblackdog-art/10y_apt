@@ -1,6 +1,27 @@
 const drawBtn = document.getElementById("drawBtn");
 const countSelect = document.getElementById("count");
 const result = document.getElementById("result");
+const themeToggle = document.getElementById("themeToggle");
+
+const THEME_KEY = "lotto-theme";
+
+function applyTheme(theme) {
+  const isDark = theme === "dark";
+  document.body.classList.toggle("dark", isDark);
+  themeToggle.textContent = isDark ? "화이트 모드" : "다크 모드";
+}
+
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  const initialTheme = saved === "dark" ? "dark" : "light";
+  applyTheme(initialTheme);
+}
+
+function toggleTheme() {
+  const nextTheme = document.body.classList.contains("dark") ? "light" : "dark";
+  applyTheme(nextTheme);
+  localStorage.setItem(THEME_KEY, nextTheme);
+}
 
 function pickNumbers() {
   const pool = Array.from({ length: 45 }, (_, i) => i + 1);
@@ -51,4 +72,7 @@ function renderTickets() {
 }
 
 drawBtn.addEventListener("click", renderTickets);
+themeToggle.addEventListener("click", toggleTheme);
+
+initTheme();
 renderTickets();

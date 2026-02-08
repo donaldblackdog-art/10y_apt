@@ -1,24 +1,1110 @@
-<!DOCTYPE html>
-<html lang="ko">
+<!doctype html>
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>아파트 10년 갈아타기 시뮬레이터</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <h1>아파트 10년 갈아타기 시뮬레이터</h1>
+  <title>아파트 갈아타기 10년 전략 시뮬레이터</title>
 
-  <label>
-    현재 아파트 가격 (만원):
-    <input type="number" />
+  <base target="_top">
+<!-- 공유 썸네일(Open Graph) 설정 -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="아파트 갈아타기 10년 전략 시뮬레이터">
+<meta property="og:description" content="월 300만 원 저축을 전제로, 3년 단위로 갈아타기가 가능한지 점검하는 부동산 시뮬레이터">
+<meta property="og:image" content="https://drive.google.com/uc?export=view&id=1ZuiIxE8GDQsTRRD5zOxCKlf-EmSXlk4i">
+<meta property="og:url" content="https://script.google.com/macros/s/AKfycbxOP1TGiSNI3IZkolnfJdE01SI_sDyoV6QhUOiOQucyxaqQhSxC-0DOCrA59195rwrz4w/exec">
+
+<meta property="og:site_name" content="10년 주거 갈아타기 전략 시뮬레이터">
+
+<!-- 트위터(카카오/네이버도 참고) -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="아파트 갈아타기 10년 전략 시뮬레이터">
+<meta name="twitter:description" content="확정 저축 + 보수적 가정으로 갈아타기 전략을 검증합니다">
+<meta name="twitter:image" content="https://drive.google.com/uc?export=view&id=1ZuiIxE8GDQsTRRD5zOxCKlf-EmSXlk4i">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --bg:#F4F6F8;
+      --card:#FFFFFF;
+      --text:#111827;
+      --muted:#6B7280;
+      --line:rgba(17,24,39,.08);
+      --shadow:0 10px 25px rgba(17,24,39,.06);
+      --radius:18px;
+      --accent:#2563EB;
+      --danger:#D92D20;
+      --pill:#EEF2FF;
+    }
+    *{box-sizing:border-box}
+    body{ margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--text); }
+    .wrap{ max-width:1120px; margin:0 auto; padding:20px 14px 40px; }
+
+    .header{ display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin:8px 0 14px; }
+    .title{ font-size:22px; font-weight:800; letter-spacing:-0.02em; }
+    .subtitle{ font-size:13px; color:var(--muted); margin-top:4px; line-height:1.4; }
+
+    .card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
+    .card.pad{ padding:16px; }
+
+    .section{ display:grid; gap:12px; }
+    .grid-2{ display:grid; grid-template-columns:1fr; gap:12px; }
+    @media (min-width:960px){ .grid-2{ grid-template-columns:1.05fr .95fr; } }
+
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:end; }
+    .field{ flex:1 1 220px; min-width:200px; }
+
+    label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+    input,select{
+      width:100%; padding:12px 12px; border-radius:14px;
+      border:1px solid rgba(17,24,39,.10); background:#fff; outline:none;
+      font-size:15px; color:var(--text);
+      transition:border-color .15s ease, box-shadow .15s ease;
+    }
+    input:focus,select:focus{ border-color:rgba(37,99,235,.45); box-shadow:0 0 0 4px rgba(37,99,235,.10); }
+
+    .btnbar{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    button{ border:0; border-radius:14px; padding:12px 14px; font-weight:800; cursor:pointer; transition:transform .06s ease; }
+    button:active{ transform:translateY(1px); }
+    .btn-primary{ background:var(--accent); color:#fff; flex:1 1 180px; }
+    .btn-ghost{ background:#EEF2F7; color:#111827; }
+
+    .hint{
+      margin-top:10px; padding:10px 12px; border-radius:14px;
+      background:#F7F9FC; border:1px solid var(--line);
+      color:var(--muted); font-size:12px; line-height:1.45;
+    }
+
+    .stepHead{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px; }
+    .stepTitle{ font-size:16px; font-weight:900; letter-spacing:-0.01em; }
+    .pill{
+      font-size:12px; font-weight:800; color:var(--accent);
+      background:var(--pill); border:1px solid rgba(37,99,235,.10);
+      padding:6px 10px; border-radius:999px; white-space:nowrap;
+    }
+
+    .warn{
+      display:none; margin-bottom:10px; padding:12px; border-radius:14px;
+      background:rgba(217,45,32,.06); border:1px solid rgba(217,45,32,.18);
+      color:var(--danger); font-weight:800; line-height:1.4;
+    }
+
+    /* PC 가로 비교 */
+    .compare{ display:none; margin-top:12px; }
+    @media (min-width:960px){
+      .compare{
+      display:block;
+      overflow-x:auto;                 /* ✅ 가로 스크롤 */
+      -webkit-overflow-scrolling:touch;
+    }
+}
+
+    .compareGrid{
+      display:grid;
+      grid-template-columns: 240px minmax(240px,1fr) minmax(240px,1fr) minmax(240px,1fr);
+      border-top:1px solid var(--line);
+      min-width: 1000px;   /* ✅ 화면이 좁으면 표가 스크롤로 넘어가게 */
+    }
+    .compareGrid > div{
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      min-width:0;
+    }
+    .h{
+      font-size:12px; color:var(--muted); font-weight:900;
+      background:#FBFCFE;
+    }
+    .label{
+      font-size:13px; color:var(--muted); font-weight:800;
+      background:#FBFCFE;
+    }
+
+    /* ✅ 값 줄바꿈 방지 + 자동 크기 */
+    .v{
+      display:flex;
+      align-items:baseline;
+      justify-content:flex-start;
+      gap:4px;
+      white-space:nowrap;
+      min-width:0;
+      font-weight:900;
+      letter-spacing:-0.01em;
+    }
+    .num{ font-size: 14px; }
+    .unit{ font-size: 12px; color: var(--muted); font-weight:800; }
+
+    .meta{
+      display:block;
+      margin-top:4px;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+      white-space:normal;
+      line-height:1.35;
+    }
+
+    .groupRow{
+      grid-column:1 / -1;
+      padding:10px 14px;
+      background:#F7F9FC;
+      border-bottom:1px solid var(--line);
+      font-weight:900;
+      color:#374151;
+      letter-spacing:-0.01em;
+    }
+
+    /* 모바일 카드 */
+    .mobileSteps{ display:block; }
+    @media (min-width:960px){ .mobileSteps{ display:none; } }
+
+    .kv{ margin-top:2px; display:flex; flex-direction:column; }
+    .kvRow{
+      display:flex; justify-content:space-between; gap:10px;
+      padding:10px 0; border-bottom:1px solid var(--line);
+    }
+    .kvRow:last-child{ border-bottom:0; padding-bottom:0; }
+    .k{ font-size:12px; color:var(--muted); font-weight:800; white-space:nowrap; }
+    .val{ font-size:14px; font-weight:900; text-align:right; white-space:nowrap; }
+
+    .divider{
+      margin:12px 0 6px;
+      height:1px;
+      background:var(--line);
+      border:0;
+    }
+    .subhead{
+      margin-top:10px;
+      font-size:12px;
+      font-weight:900;
+      color:#374151;
+    }
+
+    .footerNote{ margin-top:12px; font-size:12px; color:var(--muted); line-height:1.5; }
+
+    
+/* 접힘/펼침 안내문 (Toss 느낌) */
+.helpBox{
+  margin-top: 12px;
+}
+
+.helpDetails{
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #F7F9FC;
+  overflow: hidden;
+}
+
+.helpSummary{
+  list-style: none;
+  cursor: pointer;
+  padding: 12px 12px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  user-select: none;
+}
+
+.helpSummary::-webkit-details-marker{ display:none; }
+
+.helpIcon{
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #EEF2FF;
+  border: 1px solid rgba(37,99,235,.12);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.helpText{
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.helpTitle{
+  font-size: 13px;
+  font-weight: 900;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+.help3lines{
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.helpArrow{
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  opacity: .7;
+  transform: rotate(0deg);
+  transition: transform .18s ease;
+}
+
+.helpDetails[open] .helpArrow{
+  transform: rotate(180deg);
+}
+
+.helpBody{
+  padding: 12px 12px 14px;
+  border-top: 1px solid var(--line);
+  background: #FFFFFF;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #374151;
+}
+
+.helpBody h4{
+  margin: 12px 0 6px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.helpBody p{
+  margin: 6px 0;
+}
+
+.helpBody ul{
+  margin: 6px 0 6px 16px;
+  padding: 0;
+}
+
+.helpBody li{
+  margin: 4px 0;
+}
+
+
+/* ✅ 모바일/터치 디바이스에서는 PC 비교표를 강제로 숨기고 모바일 카드만 표시 */
+@media (hover: none) and (pointer: coarse) {
+  .compare { display: none !important; }
+  .mobileSteps { display: block !important; }
+
+  .grid-2 { grid-template-columns: 1fr !important; }
+  .wrap { max-width: 100% !important; }
+
+  /* 글씨/레이아웃이 너무 빽빽해지지 않게 */
+  .card.pad { padding: 14px !important; }
+}
+
+/* 혹시 폭 판정이 이상해도 959px 이하에서는 무조건 모바일 */
+@media (max-width: 959px) {
+  .compare { display: none !important; }
+  .mobileSteps { display: block !important; }
+  .grid-2 { grid-template-columns: 1fr !important; }
+}
+
+
+    
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div>
+        <div class="title">아파트 갈아타기 10년 전략 시뮬레이터</div>
+        <div class="subtitle">
+          월 300만 원 저축을 전제로, 3년 단위 갈아타기 가능성을 점검합니다.
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- 입력 -->
+      <div class="section">
+        <div class="card pad">
+          <div class="row">
+            <div class="field">
+              <label>월 저축액(원)</label>
+              <input id="savingMonthly" value="3000000" />
+            </div>
+            <div class="field">
+              <label>가용현금(원)</label>
+              <input id="cashAvailable" placeholder="예: 200,000,0000" />
+            </div>
+          </div>
+          <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
+  <label style="margin:0; font-size:12px; color:var(--muted); font-weight:800;">
+    10만원 단위 올림
   </label>
 
-  <br /><br />
+  <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+    <input id="cut100k" type="checkbox" checked style="width:auto; transform:scale(1.2);" />
+    <span style="font-size:12px; color:var(--muted); font-weight:800;">ON</span>
+  </label>
+</div>
 
-  <button>계산하기</button>
+          <div class="btnbar">
+            <button class="btn-primary" onclick="onCalc()">계산하기</button>
+            <button class="btn-ghost" onclick="onReset()">초기화</button>
+          </div>
 
-  <p>※ 아직 계산 로직은 없음 (화면 테스트용)</p>
+          <div class="hint">
+            STEP 1의 가용현금은 상단에서 입력합니다. STEP 2/3는 가격만 넣어도 계산됩니다(빈 값은 자동 채움).
+          </div>
+<div class="helpBox">
+  <details class="helpDetails" id="helpDetails">
+    <summary class="helpSummary">
+      <div class="helpIcon">i</div>
 
-  <script src="main.js"></script>
+      <div class="helpText">
+        <div class="helpTitle">이 계산기 사용 전 꼭 읽어주세요</div>
+        <div class="help3lines">
+          <div>- 이 계산기는 집값 예측이 아니라, 갈아타기가 가능한지 점검하는 시뮬레이터입니다.</div>
+          <div>- 월 저축액 300만 원(3년 1억 원)이 최소 조건이며, 3년 단위 정산을 가정합니다.</div>
+          <div>- 결과는 “얼마나 버는지”보다 “각 단계 생활이 감당되는지” 확인하는 용도입니다.</div>
+        </div>
+      </div>
+
+      <svg class="helpArrow" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+    </summary>
+
+    <div class="helpBody">
+      <h4>이 계산기는 무엇인가요?</h4>
+      <p>이 계산기는 <b>부동산 가격을 예측하거나 수익을 약속하는 도구가 아닙니다.</b><br>
+      확정된 저축액과 보수적인 주택 가격 가정을 바탕으로, <b>3년 단위로 주거 수준을 단계적으로 상향 이동하는 전략이 현실적으로 가능한지</b> 점검하기 위한 시뮬레이터입니다.</p>
+      <p><b>핵심 목적</b>은 “얼마를 벌 수 있는가”가 아니라, <b>“무리하지 않고 어디까지 이동할 수 있는가”</b>를 확인하는 것입니다.</p>
+
+      <h4>어떤 가정 위에서 작동하나요?</h4>
+      <ul>
+        <li>자산은 <b>3년 단위로 정산</b>하며, 각 STEP 종료 시 주택을 매도한다고 가정합니다.</li>
+        <li>각 STEP의 <b>3년 뒤 매도 가격은 ‘매입가 + 1억 원’</b>으로 고정되어 있습니다.</li>
+        <li><b>월 저축액은 월 300만 원(36개월 기준)</b>을 최소값으로 가정합니다. 더 높아지는 것은 가능하지만, <b>더 낮아지면 갈아타기 전략에 적합하지 않을 수 있습니다.</b></li>
+        <li>대출은 <b>원리금균등 상환</b> 기준이며, 금리 변동·중도상환·추가 차입은 고려하지 않습니다.</li>
+        <li>STEP 2/3은 <b>이전 STEP을 팔고 저축을 더했을 때 실제로 감당 가능한 수준인지</b>를 기준으로 매입금액이 자동 보정됩니다.</li>
+      </ul>
+
+      <h4>실사용 가이드</h4>
+      <ul>
+        <li><b>월 저축액 300만 원은 최소 조건</b>입니다. (3년마다 약 1억 원 확보)</li>
+        <li>STEP 1은 <b>집값이 떨어져도 계속 보유할 수 있는 안전한 선택</b>을 기준으로 입력해 주세요.</li>
+        <li>STEP 2/3은 희망 가격을 넣되, 결과는 <b>해당 생활 수준을 3년간 유지 가능한지</b> 관점으로 해석해 주세요.</li>
+      </ul>
+
+      <h4>마지막 안내</h4>
+      <p>이 계산기는 <b>의사결정을 돕는 참고 자료</b>입니다. 결과를 절대적인 기준으로 사용하기보다는, 본인의 상황을 점검하는 출발점으로 활용해 주세요.</p>
+    </div>
+  </details>
+</div>
+
+
+        </div>
+
+        <div class="card pad">
+          <div class="stepHead">
+            <div class="stepTitle">STEP 1</div>
+            <div class="pill">필수</div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>아파트 가격(입력)</label>
+              <input id="s1_price" placeholder="예: 600,000,000" />
+            </div>
+            <div class="field">
+              <label>월소득(입력)</label>
+              <input id="s1_income" placeholder="예: 7,000,000" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>금리(연 %)</label>
+              <input id="s1_rate" value="5.0" inputmode="decimal" />
+            </div>
+            <div class="field">
+              <label>만기(년)</label>
+              <select id="s1_term">
+                <option>10</option><option>20</option><option selected>30</option><option>40</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card pad">
+          <div class="stepHead">
+            <div class="stepTitle">STEP 2</div>
+            <div class="pill">선택</div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>아파트 가격(입력)</label>
+              <input id="s2_price" placeholder="예: 850,000,000" />
+            </div>
+            <div class="field">
+              <label>월소득(선택)</label>
+              <input id="s2_income" placeholder="비우면 STEP1 자동" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>금리(연 %, 선택)</label>
+              <input id="s2_rate" placeholder="비우면 STEP1 자동" inputmode="decimal" />
+            </div>
+            <div class="field">
+              <label>만기(년, 선택)</label>
+              <select id="s2_term">
+                <option value="">비우면 STEP1 자동</option>
+                <option>10</option><option>20</option><option>30</option><option>40</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card pad">
+          <div class="stepHead">
+            <div class="stepTitle">STEP 3</div>
+            <div class="pill">선택</div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>아파트 가격(입력)</label>
+              <input id="s3_price" placeholder="예: 1,100,000,000" />
+            </div>
+            <div class="field">
+              <label>월소득(선택)</label>
+              <input id="s3_income" placeholder="비우면 자동" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>금리(연 %, 선택)</label>
+              <input id="s3_rate" placeholder="비우면 자동" inputmode="decimal" />
+            </div>
+            <div class="field">
+              <label>만기(년, 선택)</label>
+              <select id="s3_term">
+                <option value="">비우면 자동</option>
+                <option>10</option><option>20</option><option>30</option><option>40</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 결과 -->
+      <div class="section">
+        <div class="card pad">
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:10px;">
+            <div>
+              <div style="font-size:16px; font-weight:900; letter-spacing:-0.01em;">결과</div>
+              <div class="footerNote">PC는 가로 비교, 모바일은 STEP 카드로 표시됩니다.</div>
+            </div>
+            <div id="stepsCount" class="pill" style="color:#111827; background:#F3F4F6; border-color: rgba(17,24,39,.08);">대기중</div>
+          </div>
+
+          <div id="warnings" class="warn"></div>
+
+          <div class="compare">
+            <div id="compareTable"></div>
+          </div>
+
+          <div class="mobileSteps" id="mobileCards" style="margin-top:12px;"></div>
+
+          <div class="footerNote">
+            * “매도 가격(가정)”은 매입금액에 +1억을 더한 값입니다.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let __lastResult = null;
+  
+    // =========================
+    // 1) 입력/포맷 유틸
+    // =========================
+    function comma(el){
+      el.value = el.value
+        .replace(/[^\d]/g,'')
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+  
+    const commaIds = [
+      'savingMonthly','cashAvailable',
+      's1_price','s1_income',
+      's2_price','s2_income',
+      's3_price','s3_income'
+    ];
+  
+    commaIds.forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      el.setAttribute('inputmode','numeric');
+      el.addEventListener('input',()=>comma(el));
+      comma(el); // 로드 시 기본값도 쉼표 처리
+    });
+  
+    function parseMoney(v){
+      if(v === null || v === undefined) return 0;
+      const s = String(v).replaceAll(',', '').trim();
+      if(!s) return 0;
+      const n = Number(s);
+      return isFinite(n) ? n : 0;
+    }
+  
+    function parseRate(v){
+      const s = String(v ?? '').trim();
+      if(!s) return 0;
+      const n = Number(s);
+      return isFinite(n) ? n : 0;
+    }
+  
+    function parseIntSafe(v){
+      const n = Number(String(v ?? '').trim());
+      return isFinite(n) ? Math.round(n) : 0;
+    }
+  
+    function getInput(){
+      return {
+        savingMonthly: savingMonthly.value,
+        s1:{
+          price:s1_price.value,
+          cash:cashAvailable.value,
+          income:s1_income.value,
+          rate:s1_rate.value,
+          termYears:s1_term.value
+        },
+        s2:{
+          price:s2_price.value,
+          cash:'',
+          income:s2_income.value,
+          rate:s2_rate.value,
+          termYears:s2_term.value
+        },
+        s3:{
+          price:s3_price.value,
+          cash:'',
+          income:s3_income.value,
+          rate:s3_rate.value,
+          termYears:s3_term.value
+        }
+      };
+    }
+  
+    function roundUpTo100k(x){
+      return Math.ceil(x / 100000) * 100000;
+    }
+  
+    function fmt(n){
+      let x = Math.round(Number(n||0));
+      const cutOn = document.getElementById('cut100k')?.checked;
+      if (cutOn) x = roundUpTo100k(x);
+      return x.toLocaleString('ko-KR');
+    }
+  
+    // 수익률 비율(1.1667) -> 16.7%
+    function roiToPctText(appliedRoi){
+      const r = Number(appliedRoi || 0);
+      if(!isFinite(r) || r <= 0) return '';
+      const pct = (r - 1) * 100;
+      return pct.toFixed(1) + '%';
+    }
+  
+    // =========================
+    // 2) 결과 렌더링(기존 유지)
+    // =========================
+    const monthlyRows = [
+      { key:'price',        label:'아파트 매입 금액', unit:'원' },
+      { key:'loan',         label:'대출 금액',        unit:'원' },
+      { key:'monthlyPay',   label:'월 상환액',        unit:'원' },
+      { key:'savingMonthly',label:'월 저축액',        unit:'원' },
+      { key:'living',       label:'월 생활비',        unit:'원' },
+    ];
+  
+    const after3yRows = [
+      { key:'sellPrice3y',     label:'매도 가격(가정)',        unit:'원' },
+      { key:'loanRemain3y',    label:'대출 잔액',              unit:'원' },
+      { key:'cashAfterLoan3y', label:'대출 상환 후 현금',      unit:'원' },
+      { key:'saving3y',        label:'저축액',                 unit:'원' },
+      { key:'totalCash3y',     label:'매도 후 총 현금 가용액', unit:'원' },
+    ];
+  
+    function stepMeta(s){
+      if(!s) return '';
+      if(s.userPrice && s.appliedRoi){
+        return `입력: ${fmt(s.userPrice)}원 <br> 수익률: ${roiToPctText(s.appliedRoi)}`;
+      }
+      return '';
+    }
+  
+    function cellValue(step, row){
+      if(!step) return null;
+      return step[row.key];
+    }
+  
+    function vHTML(v, unit){
+      if(v === null || v === undefined) return `<div class="v"><span class="num">-</span></div>`;
+      return `<div class="v"><span class="num">${fmt(v)}</span><span class="unit">${unit}</span></div>`;
+    }
+  
+    function renderCompare(res){
+      const s1 = res.s1, s2 = res.s2, s3 = res.s3;
+  
+      const head = `
+        <div class="compareGrid">
+          <div class="h">항목</div>
+          <div class="h">STEP 1<span class="meta">${stepMeta(s1) || ''}</span></div>
+          <div class="h">STEP 2<span class="meta">${s2 ? (stepMeta(s2) || '') : '미입력'}</span></div>
+          <div class="h">STEP 3<span class="meta">${s3 ? (stepMeta(s3) || '') : '미입력'}</span></div>
+      `;
+  
+      const body1 = monthlyRows.map(r=>{
+        return `
+          <div class="label">${r.label}</div>
+          ${vHTML(cellValue(s1,r), r.unit)}
+          ${s2 ? vHTML(cellValue(s2,r), r.unit) : `<div class="v"><span class="num">-</span></div>`}
+          ${s3 ? vHTML(cellValue(s3,r), r.unit) : `<div class="v"><span class="num">-</span></div>`}
+        `;
+      }).join('');
+  
+      const group = `<div class="groupRow">3년 후</div>`;
+  
+      const body2 = after3yRows.map(r=>{
+        return `
+          <div class="label">${r.label}</div>
+          ${vHTML(cellValue(s1,r), r.unit)}
+          ${s2 ? vHTML(cellValue(s2,r), r.unit) : `<div class="v"><span class="num">-</span></div>`}
+          ${s3 ? vHTML(cellValue(s3,r), r.unit) : `<div class="v"><span class="num">-</span></div>`}
+        `;
+      }).join('');
+  
+      document.getElementById('compareTable').innerHTML = head + body1 + group + body2 + `</div>`;
+    }
+  
+    function renderMobileCards(res){
+      const steps = [
+        { title:'STEP 1', s: res.s1 },
+        { title:'STEP 2', s: res.s2 },
+        { title:'STEP 3', s: res.s3 },
+      ].filter(x=>!!x.s);
+  
+      if(!steps.length){
+        document.getElementById('mobileCards').innerHTML =
+          `<div class="hint">STEP 1 값을 입력하고 계산하기를 눌러 주세요.</div>`;
+        return;
+      }
+  
+      const html = steps.map(x=>{
+        const meta = stepMeta(x.s);
+        const monthly = monthlyRows.map(r=>`
+          <div class="kvRow">
+            <div class="k">${r.label}</div>
+            <div class="val">${fmt(x.s[r.key])}${r.unit}</div>
+          </div>
+        `).join('');
+  
+        const after = after3yRows.map(r=>`
+          <div class="kvRow">
+            <div class="k">${r.label}</div>
+            <div class="val">${fmt(x.s[r.key])}${r.unit}</div>
+          </div>
+        `).join('');
+  
+        return `
+          <div class="card pad" style="margin-bottom:12px;">
+            <div class="stepHead">
+              <div class="stepTitle">${x.title}</div>
+              <div class="pill" style="color:#111827;background:#F3F4F6;border-color:rgba(17,24,39,.08);">
+                ${meta || '계산됨'}
+              </div>
+            </div>
+  
+            <div class="kv">${monthly}</div>
+  
+            <hr class="divider" />
+            <div class="subhead">3년 후</div>
+  
+            <div class="kv">${after}</div>
+          </div>
+        `;
+      }).join('');
+  
+      document.getElementById('mobileCards').innerHTML = html;
+    }
+  
+    function renderWarnings(res){
+      const warns = (res.summary && res.summary.warnings) ? res.summary.warnings : [];
+      const el = document.getElementById('warnings');
+      if(warns.length){
+        el.style.display = 'block';
+        el.textContent = '⚠ ' + warns.join(' / ');
+      }else{
+        el.style.display = 'none';
+        el.textContent = '';
+      }
+    }
+  
+    // =========================
+    // 3) 계산 엔진 (스프레드시트 대체)
+    // =========================
+    // 원리금균등 월 상환액
+    function monthlyPayment(principal, annualRatePct, termYears){
+      const P = Math.max(0, Number(principal || 0));
+      if(P <= 0) return 0;
+  
+      const r = (Number(annualRatePct || 0) / 100) / 12;
+      const n = Math.max(1, Math.round(Number(termYears || 0) * 12));
+  
+      if(r <= 0) return P / n;
+      return (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+    }
+  
+    // n개월 후 남은 원금
+    function remainingBalance(principal, annualRatePct, termYears, monthsPaid){
+      const P = Math.max(0, Number(principal || 0));
+      if(P <= 0) return 0;
+  
+      const r = (Number(annualRatePct || 0) / 100) / 12;
+      const n = Math.max(1, Math.round(Number(termYears || 0) * 12));
+      const k = Math.min(Math.max(0, Math.round(monthsPaid || 0)), n);
+  
+      if(r <= 0){
+        // 무이자 가정: 선형 감소
+        const remain = P * (1 - k / n);
+        return Math.max(0, remain);
+      }
+  
+      // 잔액 공식
+      const A = monthlyPayment(P, annualRatePct, termYears);
+      const remain = P * Math.pow(1 + r, k) - A * ((Math.pow(1 + r, k) - 1) / r);
+      return Math.max(0, remain);
+    }
+  
+    function calcStep({ stepNo, userPrice, income, rate, termYears, savingMonthly, startCash }){
+      const warnings = [];
+  
+      const price = Math.max(0, userPrice);
+      if(price <= 0) warnings.push(`STEP ${stepNo} 아파트 가격을 입력해 주세요`);
+  
+      const inc = Math.max(0, income);
+      if(inc <= 0) warnings.push(`STEP ${stepNo} 월소득을 입력해 주세요`);
+  
+      const sm = Math.max(0, savingMonthly);
+      const cash = Math.max(0, startCash);
+  
+      // 다운페이먼트는 보유 현금 한도 내에서 사용
+      const down = Math.min(cash, price);
+      const cashLeft = Math.max(0, cash - down);  // 집 사고 남는 현금(그대로 보유한다고 가정)
+  
+      const loan = Math.max(0, price - down);
+  
+      const mpay = monthlyPayment(loan, rate, termYears);
+  
+      const living = inc - mpay - sm;
+      if(price > 0 && inc > 0 && living < 0){
+        warnings.push(`STEP ${stepNo} 월 생활비가 마이너스입니다(소득/대출/저축액 조정 필요)`);
+      }
+  
+      // 3년(36개월) 뒤 매도가 = 매입가 + 1억(가정)
+      const sellPrice3y = price > 0 ? (price + 100000000) : 0;
+  
+      // 36개월 후 잔액
+      const loanRemain3y = remainingBalance(loan, rate, termYears, 36);
+  
+      // 매도 후(대출 상환 후) 현금: 매도가 - 잔액 + (집 사고 남긴 현금)
+      const cashAfterLoan3y = Math.max(0, sellPrice3y - loanRemain3y) + cashLeft;
+  
+      // 3년 저축액
+      const saving3y = sm * 36;
+  
+      // 총 가용 현금(가정): (매도 후 현금) + (저축)
+      const totalCash3y = cashAfterLoan3y + saving3y;
+  
+      const appliedRoi = (price > 0) ? (sellPrice3y / price) : 0;
+  
+      return {
+        step: stepNo,
+        userPrice: price,
+        appliedRoi,
+  
+        price,
+        loan,
+        monthlyPay: mpay,
+        savingMonthly: sm,
+        living,
+  
+        sellPrice3y,
+        loanRemain3y,
+        cashAfterLoan3y,
+        saving3y,
+        totalCash3y,
+  
+        _warnings: warnings
+      };
+    }
+  
+    function calcAll(input){
+  if (!input) throw new Error('입력값이 비어 있습니다.');
+
+  const warnings = [];
+  const DEFAULT_SAVING = 3000000;
+  const ASSUME_UP = 100000000;
+  const THREE_YEAR_MONTHS = 36;
+
+  const savingMonthly = parseMoney(input?.savingMonthly) || DEFAULT_SAVING;
+
+  // STEP1 (필수)
+  const s1_userPrice = parseMoney(input?.s1?.price);
+  const s1_income    = parseMoney(input?.s1?.income);
+  const s1_rate      = parseRate(input?.s1?.rate);
+  const s1_term      = parseIntSafe(input?.s1?.termYears);
+  const s1_cash      = parseMoney(input?.s1?.cash);
+
+  // Step1 필수값 검증 (Code.gs와 동일)
+  if(!s1_userPrice) throw new Error('STEP 1: 아파트 가격을 입력해 주세요.');
+  if(!s1_cash)      throw new Error('STEP 1: 가용현금을 입력해 주세요.');
+  if(!s1_income)    throw new Error('STEP 1: 월소득을 입력해 주세요.');
+  if(!s1_rate)      throw new Error('STEP 1: 금리를 입력해 주세요.');
+  if(!s1_term)      throw new Error('STEP 1: 만기를 선택해 주세요.');
+
+  // Code.gs 방식: loan = price - cash (대출 음수 가능 -> 경고)
+  const s1_loan = s1_userPrice - s1_cash;
+
+  const s1 = {
+    price: s1_userPrice,
+    cash: s1_cash,
+    loan: s1_loan,
+    income: s1_income,
+    rate: s1_rate,
+    termYears: s1_term
+  };
+
+  // Step 계산 (Code.gs 결과 필드 맞추기 위해 여기서 계산)
+  (function fillStep(step){
+    const loan = step.loan;
+    const monthlyPay = monthlyPayment(loan, step.rate, step.termYears);
+    const living = step.income - monthlyPay - savingMonthly;
+
+    const sellPrice3y = step.price + ASSUME_UP;
+    const loanRemain3y = remainingBalance(loan, step.rate, step.termYears, THREE_YEAR_MONTHS);
+
+    const saving3y = savingMonthly * THREE_YEAR_MONTHS;
+
+    const cashAfterLoan3y = (sellPrice3y - loanRemain3y);
+    const totalCash3y = cashAfterLoan3y + saving3y;
+
+    step.monthlyPay = monthlyPay;
+    step.savingMonthly = savingMonthly;
+    step.living = living;
+
+    step.sellPrice3y = sellPrice3y;
+    step.loanRemain3y = loanRemain3y;
+    step.cashAfterLoan3y = cashAfterLoan3y;
+    step.saving3y = saving3y;
+    step.totalCash3y = totalCash3y;
+
+    // Code.gs의 cashNext
+    step.cashNext = totalCash3y;
+  })(s1);
+
+  if (s1.living < 0) warnings.push('STEP1: 월 생활비가 음수입니다.');
+  if (s1.loan < 0) warnings.push('STEP1: 가용현금이 매입금액보다 큽니다(대출 음수).');
+
+  // ROI (Code.gs 동일)
+  function roiFromUp1eok(buyPrice){
+    const p = Number(buyPrice) || 0;
+    if (p <= 0) return 1;
+    return (p + ASSUME_UP) / p;
+  }
+
+  // STEP2 (선택) - ROI 보정 적용
+  let s2 = null;
+  const s2_userInputPrice = parseMoney(input?.s2?.price);
+  if (s2_userInputPrice > 0){
+    const roi1 = roiFromUp1eok(s1.price);
+    const s2_buyPrice = s2_userInputPrice * roi1;
+
+    const s2_income = parseMoney(input?.s2?.income) || s1_income;
+    const s2_rate   = parseRate(input?.s2?.rate) || s1_rate;
+    const s2_term   = parseIntSafe(input?.s2?.termYears) || s1_term;
+
+    // Code.gs: cash = s1.cashNext
+    const s2_cash = s1.cashNext;
+    const s2_loan = s2_buyPrice - s2_cash;
+
+    s2 = {
+      price: s2_buyPrice,
+      cash: s2_cash,
+      loan: s2_loan,
+      income: s2_income,
+      rate: s2_rate,
+      termYears: s2_term,
+
+      // 화면 meta용
+      userPrice: s2_userInputPrice,
+      appliedRoi: roi1
+    };
+
+    (function fillStep(step){
+      const loan = step.loan;
+      const monthlyPay = monthlyPayment(loan, step.rate, step.termYears);
+      const living = step.income - monthlyPay - savingMonthly;
+
+      const sellPrice3y = step.price + ASSUME_UP;
+      const loanRemain3y = remainingBalance(loan, step.rate, step.termYears, THREE_YEAR_MONTHS);
+
+      const saving3y = savingMonthly * THREE_YEAR_MONTHS;
+
+      const cashAfterLoan3y = (sellPrice3y - loanRemain3y);
+      const totalCash3y = cashAfterLoan3y + saving3y;
+
+      step.monthlyPay = monthlyPay;
+      step.savingMonthly = savingMonthly;
+      step.living = living;
+
+      step.sellPrice3y = sellPrice3y;
+      step.loanRemain3y = loanRemain3y;
+      step.cashAfterLoan3y = cashAfterLoan3y;
+      step.saving3y = saving3y;
+      step.totalCash3y = totalCash3y;
+      step.cashNext = totalCash3y;
+    })(s2);
+
+    if (s2.living < 0) warnings.push('STEP2: 월 생활비가 음수입니다.');
+    if (s2.loan < 0) warnings.push('STEP2: 가용현금이 매입금액보다 큽니다(대출 음수).');
+  }
+
+  // STEP3 (선택) - ROI 보정 적용 (Step2 없으면 에러)
+  let s3 = null;
+  const s3_userInputPrice = parseMoney(input?.s3?.price);
+  if (s3_userInputPrice > 0){
+    if (!s2) throw new Error('STEP 3을 계산하려면 STEP 2 가격을 먼저 입력해 주세요.');
+
+    const roi2 = roiFromUp1eok(s2.price);
+    const s3_buyPrice = s3_userInputPrice * roi2;
+
+    const s3_income =
+      parseMoney(input?.s3?.income) ||
+      (parseMoney(input?.s2?.income) || s1_income);
+
+    const s3_rate =
+      parseRate(input?.s3?.rate) ||
+      (parseRate(input?.s2?.rate) || s1_rate);
+
+    const s3_term =
+      parseIntSafe(input?.s3?.termYears) ||
+      (parseIntSafe(input?.s2?.termYears) || s1_term);
+
+    const s3_cash = s2.cashNext;
+    const s3_loan = s3_buyPrice - s3_cash;
+
+    s3 = {
+      price: s3_buyPrice,
+      cash: s3_cash,
+      loan: s3_loan,
+      income: s3_income,
+      rate: s3_rate,
+      termYears: s3_term,
+
+      userPrice: s3_userInputPrice,
+      appliedRoi: roi2
+    };
+
+    (function fillStep(step){
+      const loan = step.loan;
+      const monthlyPay = monthlyPayment(loan, step.rate, step.termYears);
+      const living = step.income - monthlyPay - savingMonthly;
+
+      const sellPrice3y = step.price + ASSUME_UP;
+      const loanRemain3y = remainingBalance(loan, step.rate, step.termYears, THREE_YEAR_MONTHS);
+
+      const saving3y = savingMonthly * THREE_YEAR_MONTHS;
+
+      const cashAfterLoan3y = (sellPrice3y - loanRemain3y);
+      const totalCash3y = cashAfterLoan3y + saving3y;
+
+      step.monthlyPay = monthlyPay;
+      step.savingMonthly = savingMonthly;
+      step.living = living;
+
+      step.sellPrice3y = sellPrice3y;
+      step.loanRemain3y = loanRemain3y;
+      step.cashAfterLoan3y = cashAfterLoan3y;
+      step.saving3y = saving3y;
+      step.totalCash3y = totalCash3y;
+      step.cashNext = totalCash3y;
+    })(s3);
+
+    if (s3.living < 0) warnings.push('STEP3: 월 생활비가 음수입니다.');
+    if (s3.loan < 0) warnings.push('STEP3: 가용현금이 매입금액보다 큽니다(대출 음수).');
+  }
+
+  const stepsCalculated = (s1 ? 1 : 0) + (s2 ? 1 : 0) + (s3 ? 1 : 0);
+
+  return {
+    saving: savingMonthly,
+    s1, s2, s3,
+    summary: { warnings, stepsCalculated }
+  };
+}
+
+  
+    // =========================
+    // 4) 버튼 핸들러 (google.script.run 제거!)
+    // =========================
+    function onCalc(){
+      try{
+        const res = calcAll(getInput());
+        __lastResult = res;
+  
+        const stepsCalculated = res.summary?.stepsCalculated ?? 1;
+        document.getElementById('stepsCount').textContent = `계산된 STEP: ${stepsCalculated}`;
+        renderWarnings(res);
+        renderCompare(res);
+        renderMobileCards(res);
+      }catch(e){
+        alert(e?.message || e);
+      }
+    }
+  
+    function onReset(){
+      ['cashAvailable','s1_price','s1_income','s2_price','s2_income','s3_price','s3_income'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el) el.value='';
+      });
+  
+      s1_rate.value='4.2';
+      s1_term.value='30';
+  
+      s2_rate.value='';
+      s2_term.value='';
+  
+      s3_rate.value='';
+      s3_term.value='';
+  
+      savingMonthly.value='3,000,000';
+      comma(savingMonthly);
+  
+      document.getElementById('stepsCount').textContent='대기중';
+      document.getElementById('warnings').style.display='none';
+      document.getElementById('compareTable').innerHTML='';
+      document.getElementById('mobileCards').innerHTML =
+        `<div class="hint">STEP 1 값을 입력하고 계산하기를 눌러 주세요.</div>`;
+    }
+  
+    document.getElementById('mobileCards').innerHTML =
+      `<div class="hint">STEP 1 값을 입력하고 계산하기를 눌러 주세요.</div>`;
+  
+    const cutToggle = document.getElementById('cut100k');
+    if (cutToggle) {
+      cutToggle.addEventListener('change', () => {
+        if (__lastResult) {
+          renderWarnings(__lastResult);
+          renderCompare(__lastResult);
+          renderMobileCards(__lastResult);
+        }
+      });
+    }
+  </script>
+  
 </body>
 </html>

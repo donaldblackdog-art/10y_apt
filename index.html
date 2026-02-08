@@ -577,10 +577,9 @@
     }
   
     function getInput(){
-      function getInput(){
   return {
     savingMonthly: savingMonthly.value,
-    assumeUp: document.getElementById('assumeUp')?.value,  // ✅ 추가
+    assumeUp: document.getElementById('assumeUp')?.value,  // ✅ 이 줄 추가
     s1:{
       price:s1_price.value,
       cash:cashAvailable.value,
@@ -588,11 +587,23 @@
       rate:s1_rate.value,
       termYears:s1_term.value
     },
-    s2:{ ... },
-    s3:{ ... }
+    s2:{
+      price:s2_price.value,
+      cash:'',
+      income:s2_income.value,
+      rate:s2_rate.value,
+      termYears:s2_term.value
+    },
+    s3:{
+      price:s3_price.value,
+      cash:'',
+      income:s3_income.value,
+      rate:s3_rate.value,
+      termYears:s3_term.value
+    }
   };
 }
-  
+
     function roundUpTo100k(x){
       return Math.ceil(x / 100000) * 100000;
     }
@@ -806,9 +817,7 @@
       if(price > 0 && inc > 0 && living < 0){
         warnings.push(`STEP ${stepNo} 월 생활비가 마이너스입니다(소득/대출/저축액 조정 필요)`);
       }
-  
-      // 3년(36개월) 뒤 매도가 = 매입가 + 1억(가정)
-      const sellPrice3y = price > 0 ? (price + 100000000) : 0;
+
   
       // 36개월 후 잔액
       const loanRemain3y = remainingBalance(loan, rate, termYears, 36);

@@ -323,12 +323,24 @@
           <div class="row">
             <div class="field">
               <label>월 저축액(원)</label>
-              <input id="savingMonthly" value="3000000" />
+              <input id="savingMonthly" value="3,000,000" />
             </div>
             <div class="field">
               <label>가용현금(원)</label>
               <input id="cashAvailable" placeholder="예: 200,000,0000" />
             </div>
+            <div class="row" style="margin-top:10px;">
+              <div class="field">
+                <label>3년 후 매매차익(가정)</label>
+                <select id="assumeUp">
+                  <option value="50000000">5천만원</option>
+                  <option value="100000000" selected>1억원</option>
+                  <option value="150000000">1억5천만원</option>
+                  <option value="200000000">2억원</option>
+                </select>
+              </div>
+            </div>
+            
           </div>
           <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
   <label style="margin:0; font-size:12px; color:var(--muted); font-weight:800;">
@@ -509,7 +521,8 @@
           <div class="mobileSteps" id="mobileCards" style="margin-top:12px;"></div>
 
           <div class="footerNote">
-            * “매도 가격(가정)”은 매입금액에 +1억을 더한 값입니다.
+            “매도 가격(가정)”은 매입금액에 선택한 매매차익을 더한 값입니다.
+
           </div>
         </div>
       </div>
@@ -564,31 +577,21 @@
     }
   
     function getInput(){
-      return {
-        savingMonthly: savingMonthly.value,
-        s1:{
-          price:s1_price.value,
-          cash:cashAvailable.value,
-          income:s1_income.value,
-          rate:s1_rate.value,
-          termYears:s1_term.value
-        },
-        s2:{
-          price:s2_price.value,
-          cash:'',
-          income:s2_income.value,
-          rate:s2_rate.value,
-          termYears:s2_term.value
-        },
-        s3:{
-          price:s3_price.value,
-          cash:'',
-          income:s3_income.value,
-          rate:s3_rate.value,
-          termYears:s3_term.value
-        }
-      };
-    }
+      function getInput(){
+  return {
+    savingMonthly: savingMonthly.value,
+    assumeUp: document.getElementById('assumeUp')?.value,  // ✅ 추가
+    s1:{
+      price:s1_price.value,
+      cash:cashAvailable.value,
+      income:s1_income.value,
+      rate:s1_rate.value,
+      termYears:s1_term.value
+    },
+    s2:{ ... },
+    s3:{ ... }
+  };
+}
   
     function roundUpTo100k(x){
       return Math.ceil(x / 100000) * 100000;
@@ -847,7 +850,7 @@
 
   const warnings = [];
   const DEFAULT_SAVING = 3000000;
-  const ASSUME_UP = 100000000;
+  const ASSUME_UP = parseMoney(input?.assumeUp) || 100000000; // ✅ 사용자 선택값
   const THREE_YEAR_MONTHS = 36;
 
   const savingMonthly = parseMoney(input?.savingMonthly) || DEFAULT_SAVING;
